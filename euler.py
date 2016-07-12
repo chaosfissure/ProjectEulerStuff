@@ -2572,10 +2572,7 @@ def problem51(**kwargs):
 	seriesSize = kwargs['seriessize']
 
 	maxDigits = len(str(Prime.ordered[-1]))
-	
-	print 'The smallest prime with a series of digits, that when replaced, can create %(seriessize) prime values.'
-	print 'Testing wildcard:\n'	
-	
+		
 	# Get lists of n digit primes at a time.
 	# Only go up to the maximum value in the prime cache.
 	for digits in xrange(2, maxDigits+1):
