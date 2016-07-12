@@ -70,36 +70,43 @@ class Prime():
 		else:
 			return n in Prime.unordered
 		
-	# http://rosettacode.org/wiki/Miller-Rabin_primality_test#Python:_Probably_correct_answers
+	# Code is obtained from https://gist.github.com/bnlucas/5857478
+	#
+	# Assumed:
+	# Copyright Nathan Lucas, 2013
+	#
+	# No license is provided with the source code, however I would gladly
+	# update this if anyone is aware of how it should be licensed.
+	
 	@staticmethod
 	def isPrime_MillerRabin(n):
-		def try_composite(a, d, n, s):
-			if pow(a, d, n) == 1:
-				return False
-			for i in range(s):
-				if pow(a, 2**i * d, n) == n-1:
-					return False
-			return True # n is definitely composite
 	
-		# Otherwise go through the Miller Rabin expansion
-		if n < 2: return False
-		if n%2 == 0: return n==2
-		
+		if n == 2:
+			return True
+		if not n & 1:
+			return False
+
+		def check(a, s, d, n):
+			x = pow(a, d, n)
+			if x == 1:
+				return True
+			for i in xrange(s - 1):
+				if x == n - 1:
+					return True
+				x = pow(x, 2, n)
+			return x == n - 1
+
 		s = 0
-		d = n-1
-		while 1:
-			q, r = divmod(d, 2)
-			if r == 1:
-				break
-				
+		d = n - 1
+
+		while d % 2 == 0:
+			d >>= 1
 			s += 1
-			d = q
-			
-		for i in range(Prime.MillerRabinTrials):
-			a = random.randint(2, n)
-			if try_composite(a, d, n, s):
+
+		for i in xrange(Prime.MillerRabinTrials):
+			a = random.randrange(2, n - 1)
+			if not check(a, s, d, n):
 				return False
-				
 		return True
 		
 		
@@ -200,13 +207,6 @@ class Prime():
 		
 		results.update(Prime.collectFactors(results, n))
 		
-		#z = [j for j in xrange(2, n) if n%j == 0]
-		#for elem in z:
-		#	if elem not in results:
-		#		print elem, 'is not in', results
-		#		raw_input()
-
-		
 		if n in results: results.remove(n)
 		if 1 in results: results.remove(1)
 		
@@ -271,37 +271,9 @@ def isPentagon(n, returnTermNumber=False):
 	if not returnTermNumber:
 		return int(term) == term
 	return term
-		
-# http://rosettacode.org/wiki/Terminal_control/Dimensions#Python
-def get_windows_terminal():
-    from ctypes import windll, create_string_buffer
-    h = windll.kernel32.GetStdHandle(-12)
-    csbi = create_string_buffer(22)
-    res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
- 
-    #return default size if actual size can't be determined
-    if not res: return 80, 25 
- 
-    import struct
-    (bufx, bufy, curx, cury, wattr, left, top, right, bottom, maxx, maxy)\
-    = struct.unpack("hhhhHhhhhhh", csbi.raw)
-    width = right - left + 1
-    height = bottom - top + 1
- 
-    return width, height
- 
-# http://rosettacode.org/wiki/Terminal_control/Dimensions#Python
-def get_linux_terminal():
-    width = os.popen('tput cols', 'r').readline()
-    height = os.popen('tput lines', 'r').readline()
- 
-    return int(width), int(height)
-	
-def getTermSize():
-	return get_linux_terminal() if os.name == 'posix' else get_windows_terminal()
-	
+			
 def screenWidth():
-	width, height = getTermSize()
+	width, height = 80, 25
 	return width
 	
 def isPalindrome(a):
